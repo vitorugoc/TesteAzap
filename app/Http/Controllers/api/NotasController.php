@@ -27,4 +27,17 @@ class NotasController extends Controller
     {
         return $this->notasAgrupadas;
     }
+
+    public function calculaTotal()
+    {
+        $resultado = array();
+        foreach ($this->notasAgrupadas as $remetente => $notas) {
+            $valorTotal = array_reduce($notas, function ($total, $nota) {
+                return $total + floatval($nota['valor']);
+            }, 0);
+            $valorFormatado = number_format($valorTotal, 2, ',', '.');
+            $resultado[$remetente] = $valorFormatado;
+        }
+        return $resultado;
+    }
 }
