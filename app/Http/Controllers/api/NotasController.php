@@ -104,14 +104,14 @@ class NotasController extends Controller
     {
         $resultado = array();
 
-        foreach ($this->notasAgrupadas as $empresa => $notas) {
+        foreach ($this->notasAgrupadas as $remetente => $notas) {
             $total = 0;
             foreach ($notas as $nota) {
                 if ($nota['status'] == 'ABERTO') {
                     $total += floatval($nota['valor']);
                 }
             }
-            $resultado[$empresa] = $total;
+            $resultado[$remetente] = $total;
         }
 
         $response = [
@@ -123,5 +123,34 @@ class NotasController extends Controller
 
     public function calculaNaoRecebido()
     {
+        $resultado = array();
+        foreach ($this->notasAgrupadas as $remetente => $notas) {
+            $valorTotal = array_reduce($notas, function ($total, $nota) {
+                if (!isset($nota['dt_entrega'])) {
+                    return $total;
+                } else {
+                    $dtEmis = DateTime::createFromFormat('d/m/Y H:i:s', $nota['dt_emis']);
+                    $dtEntrega = DateTime::createFromFormat('d/m/Y H:i:s', $nota['dt_entrega']);
+                    $dif = $dtEntrega->diff($dtEmis);
+                    $difDias = $dif->d;
+                }
+
+                if ($difDias == 2 && $dif->h == 0) {
+                    return $total;
+                }
+
+                if ($difDias >= 2)
+                    return $total + floatval($nota['valor']);
+            }, 0);
+
+            $valorFormatado = number_format($valorTotal, 2, ',', '.');
+            $resultado[$remetente] = $valorFormatado;
+        }
+
+        $response = [
+            'valoresNotasNaoRecebidos' => $resultado,
+        ];
+
+        return response()->json($response, 200);
     }
 }
