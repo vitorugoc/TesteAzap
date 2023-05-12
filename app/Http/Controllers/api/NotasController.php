@@ -8,9 +8,13 @@ use Nette\Utils\DateTime;
 
 class NotasController extends Controller
 {
-    protected $listaNotas;
-    protected $notasAgrupadas;
+    protected array $listaNotas;
+    protected array $notasAgrupadas;
 
+
+    /**
+     * Função construtora que retorna uma lista de notas agrupadas por remetente
+     */
     public function __construct()
     {
         $this->listaNotas = Http::get('http://homologacao3.azapfy.com.br/api/ps/notas')->json();
@@ -24,6 +28,11 @@ class NotasController extends Controller
         }, array());
     }
 
+    /**
+     * Retorna um JSON response com a lista de notas agrupadas
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function listaNotas()
     {
         $response = [
@@ -32,6 +41,13 @@ class NotasController extends Controller
 
         return response()->json($response, 200);
     }
+
+    /**
+     * Calcula o valor total das notas agrupadas, filtrando-as pelo dia e hora de emissão e 
+     * entrega que devem ter uma diferença de exatamente 2 dias. Então retorna um JSON com 
+     * o valor total, agrupado por rementente.
+     * @return \Illuminate\Http\JsonResponse
+     */
 
     public function calculaTotal()
     {
@@ -67,6 +83,12 @@ class NotasController extends Controller
         return response()->json($response, 200);
     }
 
+    /**
+     * Calcula o valor total das notas que foram entregues, ou seja, possuem uma data de 
+     * entrega, agrupando-o por remetente
+     * @return \Illuminate\Http\JsonResponse
+     */
+
     public function calculaValorEntregue()
     {
         $resultado = array();
@@ -100,6 +122,12 @@ class NotasController extends Controller
         return response()->json($response, 200);
     }
 
+    /**
+     * Calcula o valor total das notas que não foram entregues, ou seja, não possuem uma 
+     * data de entrega, agrupando-o por remetente.
+     * @return \Illuminate\Http\JsonResponse
+     */
+
     public function calculaValorNaoEntregue()
     {
         $resultado = array();
@@ -121,6 +149,11 @@ class NotasController extends Controller
         return response()->json($response, 200);
     }
 
+    /**
+     * Calcula o valor total perdido devido ao atraso na entrega, ou seja, as notas que 
+     * foram entregues em um prazo superior à 2 dias, agrupando-o por remetente
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function calculaNaoRecebido()
     {
         $resultado = array();
