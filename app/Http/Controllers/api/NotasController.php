@@ -8,8 +8,8 @@ use Nette\Utils\DateTime;
 
 class NotasController extends Controller
 {
-    protected array $listaNotas;
-    protected array $notasAgrupadas;
+    protected  $listaNotas;
+    protected  $notasAgrupadas;
 
 
     /**
