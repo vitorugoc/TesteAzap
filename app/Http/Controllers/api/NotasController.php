@@ -94,9 +94,34 @@ class NotasController extends Controller
         }
 
         $response = [
-            'valoresNotas' => $resultado,
+            'valoresNotasEntregues' => $resultado,
         ];
 
         return response()->json($response, 200);
+    }
+
+    public function calculaValorNaoEntregue()
+    {
+        $resultado = array();
+
+        foreach ($this->notasAgrupadas as $empresa => $notas) {
+            $total = 0;
+            foreach ($notas as $nota) {
+                if ($nota['status'] == 'ABERTO') {
+                    $total += floatval($nota['valor']);
+                }
+            }
+            $resultado[$empresa] = $total;
+        }
+
+        $response = [
+            'valoresNotasNaoEntregues' => $resultado,
+        ];
+
+        return response()->json($response, 200);
+    }
+
+    public function calculaNaoRecebido()
+    {
     }
 }
