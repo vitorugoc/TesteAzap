@@ -10,6 +10,8 @@ Route::get('/notas/valor', "App\Http\Controllers\api\NotasController@calculaTota
 
 Route::get('/notas/valor/entregue', "App\Http\Controllers\api\NotasController@calculaValorEntregue");
 
+Route::get('/notas/valor/nao_entregue', "App\Http\Controllers\api\NotasController@calculaValorNaoEntregue");
+
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
