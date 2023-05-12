@@ -4,11 +4,12 @@ namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Http;
+use Nette\Utils\DateTime;
 
 class NotasController extends Controller
 {
-    public $listaNotas;
-    public $notasAgrupadas;
+    protected $listaNotas;
+    protected $notasAgrupadas;
 
     public function __construct()
     {
@@ -25,7 +26,11 @@ class NotasController extends Controller
 
     public function listaNotas()
     {
-        return $this->notasAgrupadas;
+        $response = [
+            'notas' => $this->notasAgrupadas,
+        ];
+
+        return response()->json($response, 200);
     }
 
     public function calculaTotal()
@@ -33,11 +38,36 @@ class NotasController extends Controller
         $resultado = array();
         foreach ($this->notasAgrupadas as $remetente => $notas) {
             $valorTotal = array_reduce($notas, function ($total, $nota) {
-                return $total + floatval($nota['valor']);
+                $dtEmis = DateTime::createFromFormat('d/m/Y H:i:s', $nota['dt_emis']);
+                if (isset($nota['dt_entrega'])) {
+                    $dtEntrega = DateTime::createFromFormat('d/m/Y H:i:s', $nota['dt_entrega']);
+                    $dif = $dtEntrega->diff($dtEmis);
+                    $difDias = $dif->d;
+                } else {
+                    $difDias = 0;
+                    $dif = $dtEmis->diff($dtEmis);
+                }
+
+                if ($difDias == 2 && $dif->h > 0) {
+                    return $total;
+                }
+
+                if ($difDias <= 2)
+                    return $total + floatval($nota['valor']);
             }, 0);
+
             $valorFormatado = number_format($valorTotal, 2, ',', '.');
             $resultado[$remetente] = $valorFormatado;
         }
-        return $resultado;
+
+        $response = [
+            'valoresNotas' => $resultado,
+        ];
+
+        return response()->json($response, 200);
+    }
+
+    public function calculaValorEntregues()
+    {
     }
 }
