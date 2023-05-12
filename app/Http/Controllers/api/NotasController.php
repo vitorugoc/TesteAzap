@@ -67,7 +67,36 @@ class NotasController extends Controller
         return response()->json($response, 200);
     }
 
-    public function calculaValorEntregues()
+    public function calculaValorEntregue()
     {
+        $resultado = array();
+        foreach ($this->notasAgrupadas as $remetente => $notas) {
+            $valorTotal = array_reduce($notas, function ($total, $nota) {
+                if (!isset($nota['dt_entrega'])) {
+                    return $total;
+                } else {
+                    $dtEmis = DateTime::createFromFormat('d/m/Y H:i:s', $nota['dt_emis']);
+                    $dtEntrega = DateTime::createFromFormat('d/m/Y H:i:s', $nota['dt_entrega']);
+                    $dif = $dtEntrega->diff($dtEmis);
+                    $difDias = $dif->d;
+                }
+
+                if ($difDias == 2 && $dif->h > 0) {
+                    return $total;
+                }
+
+                if ($difDias <= 2)
+                    return $total + floatval($nota['valor']);
+            }, 0);
+
+            $valorFormatado = number_format($valorTotal, 2, ',', '.');
+            $resultado[$remetente] = $valorFormatado;
+        }
+
+        $response = [
+            'valoresNotas' => $resultado,
+        ];
+
+        return response()->json($response, 200);
     }
 }
